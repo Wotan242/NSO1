@@ -1,0 +1,64 @@
+module LOOP {
+
+  namespace "http://example.com/LOOP";
+  prefix LOOP;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  description
+    "Service and action model for the automated assignment and advertisement of Loopback addresses";
+
+  revision 2016-01-01 {
+    description
+      "Initial revision.";
+  }
+
+  container Test {
+
+    tailf:action LOOPTest {
+      tailf:actionpoint LOOPTest-actionpoint;
+        input {
+          leaf ServiceInstance {
+            type leafref {
+              path "/LOOP/name";
+            }
+          }}
+        
+        output {
+          leaf Result {
+            type string;
+          }
+        }
+    }
+  }
+
+  list LOOP {
+      
+      key name;
+      leaf name {
+        type string;
+      }
+
+      uses ncs:service-data;
+      ncs:servicepoint LOOPservicepoint;
+       
+      leaf area {type uint8;}
+
+      list device {
+         key name;
+         leaf name {
+             type leafref {   path "/ncs:devices/ncs:device/ncs:name";}
+          }
+         leaf loopback {type inet:ipv4-address;}
+       }
+      }
+   }
+

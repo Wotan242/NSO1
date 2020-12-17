@@ -1,0 +1,87 @@
+# -*- mode: python; python-indent: 4 -*-
+import ncs
+from ncs.application import Service
+from ncs.dp import Action
+from ncs import maapi
+from ncs import maagic
+
+
+# ---------------
+# ACTIONS EXAMPLE
+# ---------------
+class LOOPAction(Action):
+    @Action.action
+    def cb_action(self, uinfo, name, kp, input, output, trans):
+        self.log.info('action name: ', name)
+        
+        with maapi.single_write_trans('admin', 'python') as t:
+            root = maagic.get_root(t)
+            servinst = input.ServiceInstance
+            devlist = root.LOOP[servinst].device.keys()
+            alllb = []
+            for dev in devlist:
+                lb = root.LOOP[servinst].device[dev].loopback
+                alllb.append(lb)
+            self.log.info('alllb ', alllb)
+            result = '\n'
+            for dev in devlist:
+                lb = root.LOOP[servinst].device[dev].loopback
+                
+                for lo in alllb:
+                    if lo != lb:
+                        action = root.devices.device[dev].rpc.jrpc__rpc_ping.ping
+                        inp = action.get_input()
+                        inp.host = lo
+                        inp.count = 2
+                        outp = action(inp)
+                        resp = outp.ping_results.probe_results_summary.responses_received
+                        if resp == 2:
+                            result += 'Ping von %s with %s -> %s successful\n' % (dev  ,lb ,lo)
+                        else:
+                            result += 'Ping von %s with %s -> %s NOT successful\n' % (dev , lb, lo)
+            output.Result = result
+
+            t.apply()
+
+
+
+# ------------------------
+# SERVICE CALLBACK EXAMPLE
+# ------------------------
+class ServiceCallbacks(Service):
+
+   
+    @Service.create
+    def cb_create(self, tctx, root, service, proplist):
+        self.log.info('Service create(service=', service._path, ')')
+        areaid = service.area
+        devlist = service.device.keys()
+        for dev in devlist:
+            lb = service.device[dev].loopback
+            self.log.info('Loopback: ' , lb)
+            del root.devices.device[dev].config.junos__configuration.protocols.ospf.area
+            root.devices.device[dev].config.junos__configuration.protocols.ospf.area.create(areaid)
+            root.devices.device[dev].config.junos__configuration.protocols.ospf.area[areaid].interface.create('all')
+            del root.devices.device[dev].config.junos__configuration.interfaces.interface['lo0'].unit[0].family.inet.address
+            root.devices.device[dev].config.junos__configuration.interfaces.interface['lo0'].unit[0].family.inet.address.create(lb + '/32')
+            root.devices.device[dev].config.junos__configuration.routing_options.router_id = lb
+
+   
+
+# ---------------------------------------------
+# COMPONENT THREAD THAT WILL BE STARTED BY NCS.
+# ---------------------------------------------
+class Main(ncs.application.Application):
+    def setup(self):
+       
+        self.log.info('Main RUNNING')
+
+       
+        self.register_service('LOOPservicepoint', ServiceCallbacks)
+
+        self.register_action('LOOPTest-actionpoint', LOOPAction)
+
+       
+    def teardown(self):
+       
+        self.log.info('Main FINISHED')

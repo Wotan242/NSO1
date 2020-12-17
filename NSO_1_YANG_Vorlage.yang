@@ -1,0 +1,61 @@
+module IBGP {
+  namespace "http://com/example/IBGP";
+  prefix IBGP;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  import tailf-common {
+    prefix tailf;
+  }
+
+  list IBGP {
+    key name;
+
+    uses ncs:service-data;
+    ncs:servicepoint "IBGP";
+
+    leaf name {
+      type string;
+      tailf:info "Service Instance Name";
+    }
+
+    leaf ASN {
+       type uint16;
+       tailf:info "2 Byte ASN";
+
+    }
+
+
+    container Peer1 {
+    
+       leaf device {
+         type leafref {
+           path "/ncs:devices/ncs:device/ncs:name";
+         }
+       }
+       leaf loopback-address {
+         type inet:ipv4-address;
+         tailf:info "Loopback Address";
+       }
+
+    }
+
+    container Peer2 {
+    
+       leaf device {
+         type leafref {
+           path "/ncs:devices/ncs:device/ncs:name";
+         }
+       }
+       leaf loopback-address {
+         type inet:ipv4-address;
+         tailf:info "Loopback Address";
+       }
+    }    
+  }
+}

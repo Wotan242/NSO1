@@ -1,0 +1,153 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0"
+                 servicepoint="IBGP">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <device>
+     
+      <name>{/Peer1/device}</name>
+      <config>
+        
+      <configuration xmlns="http://xml.juniper.net/xnm/1.1/xnm">
+
+                     <interfaces>
+                       <interface>
+                         <name>lo0</name>
+                         <unit>
+                           <name>0</name>
+                           <family>
+                             <inet>
+                               <address>
+                                 <name>{/Peer1/loopback-address}/32</name>
+                               </address>
+                             </inet>
+                           </family>
+                         </unit>
+                       </interface>
+                     </interfaces>
+                       
+                     <routing-options>
+                       <router-id>{/Peer1/loopback-address}</router-id>
+                      <autonomous-system>
+                         <as-number>{/ASN}</as-number>
+                       </autonomous-system>
+                     </routing-options>
+
+
+
+
+                    
+                     <protocols>
+                       
+                       <ospf>
+                         <area>
+                           <name>0</name>
+                           <interface>
+                             <name>all</name>
+                           </interface>
+                           <interface>
+                             <name>fxp0.0</name>
+                             <disable/>
+                           </interface>
+
+                         </area>
+                       </ospf>
+
+                       <bgp>
+                         <group>
+                           <name>internal-Peers</name>
+                           <type>internal</type>
+                           <local-address>{/Peer1/loopback-address}</local-address>
+                          
+                           <neighbor>
+                             <name>{/Peer2/loopback-address}</name>
+                           </neighbor>
+                          
+                         </group>
+                       </bgp>
+
+                    </protocols>
+
+
+                    
+        </configuration>
+
+
+      </config>
+    </device>
+
+
+    <device>
+     
+      <name>{/Peer2/device}</name>
+      <config>
+        
+
+      <configuration xmlns="http://xml.juniper.net/xnm/1.1/xnm">
+
+                     <interfaces>
+                       <interface>
+                         <name>lo0</name>
+                         <unit>
+                           <name>0</name>
+                           <family>
+                             <inet>
+                               <address>
+                                 <name>{/Peer2/loopback-address}/32</name>
+                               </address>
+                             </inet>
+                           </family>
+                         </unit>
+                       </interface>
+                     </interfaces>
+                       
+                     <routing-options>
+                       <router-id>{/Peer2/loopback-address}</router-id>
+                      <autonomous-system>
+                         <as-number>{/ASN}</as-number>
+                       </autonomous-system>
+                     </routing-options>
+
+
+
+
+                    
+                     <protocols>
+                       
+                       <ospf>
+                         <area>
+                           <name>0</name>
+                           <interface>
+                             <name>all</name>
+                           </interface>
+                           <interface>
+                             <name>fxp0.0</name>
+                             <disable/>
+                           </interface>
+
+                         </area>
+                       </ospf>
+
+                       <bgp>
+                         <group>
+                           <name>internal-Peers</name>
+                           <type>internal</type>
+                           <local-address>{/Peer2/loopback-address}</local-address>
+                          
+                           <neighbor>
+                             <name>{/Peer1/loopback-address}</name>
+                           </neighbor>
+                          
+                         </group>
+                       </bgp>
+
+                    </protocols>
+
+
+                    
+        </configuration>
+
+        
+      </config>
+    </device>
+
+  </devices>
+</config-template>
